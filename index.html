@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dragon战力分组v1.1——by嘉然</title>
+    <title>dragon战力分组v2.3——by嘉然</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -28,26 +28,35 @@
         .controls {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
+        }
+        .controls-left {
+            display: flex;
             align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 300px;
         }
         .search-box {
             flex: 0 0 auto;
-            width: 200px;
+            width: 220px;
         }
         .search-box input {
             width: 100%;
-            padding: 8px;
+            padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
+            box-sizing: border-box;
         }
-        .controls-right {
+        .controls-middle {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            flex: 0 0 auto;
         }
         .reimport-btn {
             background-color: #3498db;
@@ -58,9 +67,16 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s;
+            white-space: nowrap;
         }
         .reimport-btn:hover {
             background-color: #2980b9;
+        }
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 0 0 auto;
         }
         .match-btn {
             background-color: #2ecc71;
@@ -71,6 +87,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s;
+            min-width: 100px;
         }
         .match-btn:hover {
             background-color: #27ae60;
@@ -82,8 +99,7 @@
         .mode-toggle {
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin-left: 10px;
+            gap: 8px;
         }
         .mode-toggle input {
             width: 18px;
@@ -95,6 +111,14 @@
             cursor: pointer;
             color: #2c3e50;
             font-weight: 500;
+            white-space: nowrap;
+        }
+        .selected-count {
+            color: #7f8c8d;
+            font-size: 14px;
+            min-width: 120px;
+            text-align: right;
+            white-space: nowrap;
         }
         .player-grid {
             display: grid;
@@ -197,12 +221,7 @@
             font-weight: bold;
             color: #2c3e50;
         }
-        .selected-count {
-            margin-left: 10px;
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-        
+
         /* 比赛模式下的队伍展示样式 */
         .tournament-teams-container {
             display: none;
@@ -215,31 +234,65 @@
             margin-bottom: 20px;
             text-align: center;
         }
-        .tournament-teams {
+        .tournament-teams-list {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto;
         }
-        .tournament-team {
-            flex: 0 0 calc(33.333% - 20px);
-            min-width: 300px;
+        .tournament-team-item {
+            background-color: #f9f9f9;
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 12px 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .tournament-team-header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .team-name {
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
+            font-size: 15px;
             color: #2c3e50;
         }
-        
+        .team-total-power {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .tournament-team-players {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .tournament-player {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .player-name-tag {
+            font-weight: 500;
+        }
+        .player-power-tag {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -298,91 +351,99 @@
             background-color: #e74c3c;
             color: white;
         }
-        .team-stats {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            text-align: right;
-        }
         .error-display {
             text-align: center;
-            margin-top: 15px;
+            margin: 15px auto 20px;
             padding: 10px;
             background-color: #f8f9fa;
             border-radius: 4px;
             font-weight: bold;
             color: #2c3e50;
+            max-width: 900px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>dragon战力分组v1.1——by嘉然</h1>
-        
-        <div class="controls">
+<div class="container">
+    <h1>dragon战力分组v2.3——by嘉然</h1>
+
+    <div class="controls">
+        <div class="controls-left">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="搜索玩家ID...">
             </div>
-            <div class="controls-right">
-                <button id="reimportBtn" class="reimport-btn">重新导入龙力</button>
-                <div class="mode-toggle">
-                    <input type="checkbox" id="tournamentMode">
-                    <label for="tournamentMode">比赛模式</label>
-                </div>
-                <button id="matchBtn" class="match-btn">匹配队伍</button>
-                <span id="selectedCount" class="selected-count">已选: 0/10</span>
-            </div>
+            <button id="reimportBtn" class="reimport-btn">重新导入龙力</button>
         </div>
-        
-        <div id="playerGrid" class="player-grid"></div>
-        
-        <div id="results" class="results">
-            <h2>分组结果</h2>
-            <div id="errorInfo" class="error-display"></div>
-            <div class="teams">
-                <div class="team team-1">
-                    <div class="team-header">近卫军团</div>
-                    <div id="team1Players"></div>
-                    <div class="team-power">总龙力: <span id="team1Power">0</span></div>
-                </div>
-                <div class="team team-2">
-                    <div class="team-header">天灾军团</div>
-                    <div id="team2Players"></div>
-                    <div class="team-power">总龙力: <span id="team2Power">0</span></div>
-                </div>
+
+        <div class="controls-right">
+            <div class="mode-toggle">
+                <input type="checkbox" id="tournamentMode">
+                <label for="tournamentMode">比赛模式</label>
             </div>
-        </div>
-        
-        <div id="tournamentResults" class="tournament-teams-container">
-            <div class="tournament-teams-title">比赛模式分组结果</div>
-            <div id="tournamentErrorInfo" class="error-display"></div>
-            <div id="tournamentTeams" class="tournament-teams"></div>
+            <button id="matchBtn" class="match-btn">匹配队伍</button>
+            <span id="selectedCount" class="selected-count">已选: 0/10</span>
         </div>
     </div>
 
-    <!-- 重新导入龙力模态框 -->
-    <div id="reimportModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">重新导入龙力数据</div>
-            <textarea id="importTextarea" class="modal-textarea" placeholder="请粘贴龙力数据，格式示例：
-【4龙】：SMJB、涅槃、嘉然、芸府、千华
+    <div id="playerGrid" class="player-grid"></div>
+
+    <div id="results" class="results">
+        <h2>分组结果</h2>
+        <div id="errorInfo" class="error-display"></div>
+        <div class="teams">
+            <div class="team team-1">
+                <div class="team-header">近卫军团</div>
+                <div id="team1Players"></div>
+                <div class="team-power">总龙力: <span id="team1Power">0</span></div>
+            </div>
+            <div class="team team-2">
+                <div class="team-header">天灾军团</div>
+                <div id="team2Players"></div>
+                <div class="team-power">总龙力: <span id="team2Power">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tournamentResults" class="tournament-teams-container">
+        <div class="tournament-teams-title">比赛模式分组结果</div>
+        <div id="tournamentErrorInfo" class="error-display"></div>
+        <div id="tournamentTeams" class="tournament-teams-list"></div>
+    </div>
+</div>
+
+<!-- 重新导入龙力模态框 -->
+<div id="reimportModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">重新导入龙力数据</div>
+        <textarea id="importTextarea" class="modal-textarea" placeholder="请粘贴龙力数据，格式示例：
+【4龙】：神秘嘉宾、涅槃、嘉然、芸府、千华
 【3.5龙】：二哥、凌天、潇遥、吴孟达、老情、灭世、阿鹅、潘神、花花鱼、楠楠郭、佩老师
 【3龙】：纽卡、向阳、阿平、小欢哥、冷少、安娜、蓝屁股、七秒、校花、富贵、开图、七夜、清心寡欲、猛子、烤鸡腿、挨揍
 【2.5龙】：灭徒、讲过往、橘子、大恐龙、落腥、人性本涩、烤恐龙、蓝七胖、叶斩秋
 【2龙】：独秀、基无敌、如玉、文总、不虚、毛子、幽冥、榆林后生、007、小若溪
 【1.5龙】：矮子、月光宝宝、我湘威武、长安、玩玩、范迪塞尔、前原诚司
 【1龙】：凯凯爽歪歪、流卷风、毅如既往、小明、杀手、阿点、阿朵、清风拂发、虎牙儿、月底、工程师"></textarea>
-            <div class="modal-buttons">
-                <button id="cancelImport" class="modal-btn modal-cancel">取消</button>
-                <button id="confirmImport" class="modal-btn modal-confirm">确认导入</button>
-            </div>
+        <div class="modal-buttons">
+            <button id="cancelImport" class="modal-btn modal-cancel">取消</button>
+            <button id="confirmImport" class="modal-btn modal-confirm">确认导入</button>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
         // 默认玩家数据
         const defaultPlayers = {
-            "SMJB": 4,
+            "神秘嘉宾": 4,
             "涅槃": 4,
             "嘉然": 4,
             "芸府": 4,
@@ -456,16 +517,16 @@
         let players = {...defaultPlayers};
         let selectedPlayers = new Set();
         let tournamentMode = false;
-        
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
             renderPlayerGrid();
-            
+
             // 搜索功能
             document.getElementById('searchInput').addEventListener('input', function() {
                 renderPlayerGrid();
             });
-            
+
             // 比赛模式切换
             document.getElementById('tournamentMode').addEventListener('change', function() {
                 tournamentMode = this.checked;
@@ -473,19 +534,19 @@
                 renderPlayerGrid();
                 updateSelectedCount();
             });
-            
+
             // 重新导入龙力
             document.getElementById('reimportBtn').addEventListener('click', function() {
                 document.getElementById('reimportModal').style.display = 'flex';
                 document.getElementById('importTextarea').value = generateExportText();
                 document.getElementById('importTextarea').focus();
             });
-            
+
             // 模态框按钮
             document.getElementById('cancelImport').addEventListener('click', function() {
                 document.getElementById('reimportModal').style.display = 'none';
             });
-            
+
             document.getElementById('confirmImport').addEventListener('click', function() {
                 const text = document.getElementById('importTextarea').value;
                 if (text.trim()) {
@@ -503,15 +564,15 @@
                     alert('请输入有效的龙力数据');
                 }
             });
-            
+
             // 匹配队伍
             document.getElementById('matchBtn').addEventListener('click', matchTeams);
         });
-        
+
         // 生成导出文本
         function generateExportText() {
             const powerGroups = {};
-            
+
             // 按龙力分组
             Object.entries(players).forEach(([name, power]) => {
                 if (!powerGroups[power]) {
@@ -519,59 +580,59 @@
                 }
                 powerGroups[power].push(name);
             });
-            
+
             // 按龙力从高到低排序
             const sortedPowers = Object.keys(powerGroups).sort((a, b) => b - a);
-            
+
             // 生成文本
             let result = '';
             sortedPowers.forEach(power => {
                 result += `【${power}龙】：${powerGroups[power].join('、')}\n`;
             });
-            
+
             return result.trim();
         }
-        
+
         // 解析玩家文本
         function parsePlayerText(text) {
             const players = {};
             const lines = text.split('\n');
-            
+
             for (const line of lines) {
                 if (!line.trim()) continue;
-                
-                // 匹配格式如：【4龙】：SMJB、涅槃、嘉然
+
+                // 匹配格式如：【4龙】：神秘嘉宾、涅槃、嘉然
                 const match = line.match(/^【(\d+(?:\.\d+)?)龙】：(.+)$/);
                 if (!match) {
                     throw new Error(`格式错误: "${line}"`);
                 }
-                
+
                 const power = parseFloat(match[1]);
                 const names = match[2].split(/[、，,]/).map(name => name.trim()).filter(name => name);
-                
+
                 names.forEach(name => {
                     players[name] = power;
                 });
             }
-            
+
             if (Object.keys(players).length === 0) {
                 throw new Error('未找到有效的玩家数据');
             }
-            
+
             return players;
         }
-        
+
         // 渲染玩家网格
         function renderPlayerGrid() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const playerGridElement = document.getElementById('playerGrid');
             playerGridElement.innerHTML = '';
-            
+
             // 过滤和排序玩家
             const filteredPlayers = Object.entries(players)
                 .filter(([name]) => name.toLowerCase().includes(searchTerm))
                 .sort((a, b) => b[1] - a[1]);
-            
+
             // 渲染每个玩家卡片
             filteredPlayers.forEach(([name, power]) => {
                 const playerCard = document.createElement('div');
@@ -581,7 +642,7 @@
                     <div class="player-name">${name}</div>
                     <div class="player-power">${power} 龙</div>
                 `;
-                
+
                 playerCard.addEventListener('click', function() {
                     if (selectedPlayers.has(name)) {
                         selectedPlayers.delete(name);
@@ -597,30 +658,31 @@
                     }
                     updateSelectedCount();
                 });
-                
+
                 playerGridElement.appendChild(playerCard);
             });
-            
+
             updateSelectedCount();
         }
-        
+
         // 更新已选玩家计数
         function updateSelectedCount() {
             const selectedCount = selectedPlayers.size;
             const matchBtn = document.getElementById('matchBtn');
-            
+            const selectedCountElement = document.getElementById('selectedCount');
+
             if (tournamentMode) {
                 // 比赛模式：选择人数为5的倍数时才可点击
                 const isMultipleOf5 = selectedCount > 0 && selectedCount % 5 === 0;
                 matchBtn.disabled = !isMultipleOf5;
-                document.getElementById('selectedCount').textContent = `已选: ${selectedCount}人 (需要5的倍数)`;
+                selectedCountElement.textContent = `已选: ${selectedCount}人`;
             } else {
                 // 非比赛模式：选择10人时才可点击
                 matchBtn.disabled = selectedCount !== 10;
-                document.getElementById('selectedCount').textContent = `已选: ${selectedCount}/10`;
+                selectedCountElement.textContent = `已选: ${selectedCount}/10`;
             }
         }
-        
+
         // 匹配队伍
         function matchTeams() {
             if (tournamentMode) {
@@ -629,145 +691,123 @@
                 matchRegularTeams();
             }
         }
-        
-        // 匹配常规队伍（2队模式）- 优化蛇形算法
+
+        // 匹配常规队伍（2队模式）- 强化蛇形算法
         function matchRegularTeams() {
             if (selectedPlayers.size !== 10) {
                 alert('请选择10名玩家进行匹配');
                 return;
             }
-            
+
             // 将选中的玩家转换为数组并按龙力从高到低排序
             const selectedPlayersArray = Array.from(selectedPlayers).map(name => ({
                 name,
                 power: players[name]
             })).sort((a, b) => b.power - a.power);
-            
+
             // 初始化两个队伍
-            const team1 = [];
-            const team2 = [];
-            
-            // 优化蛇形算法：确保两队总龙力误差最小化
+            let team1 = [];
+            let team2 = [];
+
+            // 第一轮：基本蛇形分配
             for (let i = 0; i < selectedPlayersArray.length; i++) {
                 const player = selectedPlayersArray[i];
-                
-                // 计算当前两队总龙力
-                const team1Power = team1.reduce((sum, p) => sum + p.power, 0);
-                const team2Power = team2.reduce((sum, p) => sum + p.power, 0);
-                
-                // 蛇形分配，但考虑当前龙力差异
+
                 if (i % 2 === 0) {
-                    // 偶数索引
-                    if (team1.length < 5 && (team1Power <= team2Power || team2.length >= 5)) {
-                        team1.push(player);
-                    } else {
-                        team2.push(player);
-                    }
+                    team1.push(player);
                 } else {
-                    // 奇数索引
-                    if (team2.length < 5 && (team2Power <= team1Power || team1.length >= 5)) {
-                        team2.push(player);
-                    } else {
-                        team1.push(player);
-                    }
+                    team2.push(player);
                 }
             }
-            
-            // 微调：如果两队龙力差异超过1，尝试交换队员
+
+            // 计算初始龙力
             let team1Power = team1.reduce((sum, player) => sum + player.power, 0);
             let team2Power = team2.reduce((sum, player) => sum + player.power, 0);
-            
-            // 尝试找到最佳交换，减少误差
-            if (Math.abs(team1Power - team2Power) > 1) {
-                let bestDiff = Math.abs(team1Power - team2Power);
-                let foundBetter = false;
-                
-                // 尝试交换两队中的队员
-                for (let i = 0; i < team1.length; i++) {
-                    for (let j = 0; j < team2.length; j++) {
-                        // 计算交换后的龙力差异
-                        const newTeam1Power = team1Power - team1[i].power + team2[j].power;
-                        const newTeam2Power = team2Power - team2[j].power + team1[i].power;
-                        const newDiff = Math.abs(newTeam1Power - newTeam2Power);
-                        
-                        // 如果交换后差异更小且不超过1，执行交换
-                        if (newDiff < bestDiff && newDiff <= 1) {
-                            // 交换队员
-                            [team1[i], team2[j]] = [team2[j], team1[i]];
-                            team1Power = newTeam1Power;
-                            team2Power = newTeam2Power;
-                            bestDiff = newDiff;
-                            foundBetter = true;
-                            
-                            // 如果差异已经小于等于1，停止搜索
-                            if (newDiff <= 1) break;
+            let currentDiff = Math.abs(team1Power - team2Power);
+
+            // 如果初始差异超过0.5，进行优化调整
+            if (currentDiff > 0.5) {
+                // 对两队进行排序，高龙力在前
+                team1.sort((a, b) => b.power - a.power);
+                team2.sort((a, b) => b.power - a.power);
+
+                // 尝试多次交换优化
+                const maxIterations = 50;
+                for (let iter = 0; iter < maxIterations; iter++) {
+                    let bestSwap = null;
+                    let bestImprovement = 0;
+
+                    // 寻找最佳交换
+                    for (let i = 0; i < team1.length; i++) {
+                        for (let j = 0; j < team2.length; j++) {
+                            // 计算交换后的差异
+                            const newTeam1Power = team1Power - team1[i].power + team2[j].power;
+                            const newTeam2Power = team2Power - team2[j].power + team1[i].power;
+                            const newDiff = Math.abs(newTeam1Power - newTeam2Power);
+                            const improvement = currentDiff - newDiff;
+
+                            // 记录最佳交换
+                            if (improvement > bestImprovement) {
+                                bestImprovement = improvement;
+                                bestSwap = { i, j, newTeam1Power, newTeam2Power, newDiff };
+                            }
                         }
                     }
-                    if (bestDiff <= 1) break;
-                }
-                
-                // 如果没找到合适的交换，尝试补强法
-                if (!foundBetter && bestDiff > 1) {
-                    // 重新排序两队，按龙力从高到低
-                    team1.sort((a, b) => b.power - a.power);
-                    team2.sort((a, b) => b.power - a.power);
-                    
-                    // 尝试将两队中龙力相近的队员交换
-                    for (let i = 0; i < Math.min(team1.length, team2.length); i++) {
-                        const swapDiff = Math.abs((team1[i].power - team2[i].power));
-                        const newDiff = Math.abs(team1Power - team1[i].power + team2[i].power - (team2Power - team2[i].power + team1[i].power));
-                        
-                        if (newDiff < bestDiff && newDiff <= 1) {
-                            [team1[i], team2[i]] = [team2[i], team1[i]];
-                            team1Power = team1.reduce((sum, player) => sum + player.power, 0);
-                            team2Power = team2.reduce((sum, player) => sum + player.power, 0);
-                            bestDiff = newDiff;
-                            break;
-                        }
+
+                    // 如果找到有改善的交换，执行交换
+                    if (bestSwap && bestImprovement > 0) {
+                        // 交换队员
+                        [team1[bestSwap.i], team2[bestSwap.j]] = [team2[bestSwap.j], team1[bestSwap.i]];
+                        team1Power = bestSwap.newTeam1Power;
+                        team2Power = bestSwap.newTeam2Power;
+                        currentDiff = bestSwap.newDiff;
+
+                        // 如果差异已经<=0.5，停止优化
+                        if (currentDiff <= 0.5) break;
+                    } else {
+                        // 没有改善，停止优化
+                        break;
                     }
                 }
             }
-            
-            // 确保最终误差不超过1
+
+            // 最终计算差异
             const finalDiff = Math.abs(team1Power - team2Power);
-            if (finalDiff > 1) {
-                console.warn(`无法将两队误差控制在1以内，当前误差: ${finalDiff}`);
-            }
-            
+
             // 显示结果
             displayRegularResults(team1, team2, finalDiff);
         }
-        
-        // 匹配比赛队伍（多队模式）- 优化蛇形算法
+
+        // 匹配比赛队伍（多队模式）- 强化蛇形算法
         function matchTournamentTeams() {
             const selectedCount = selectedPlayers.size;
             if (selectedCount % 5 !== 0) {
                 alert(`比赛模式需要选择5的倍数人数，当前选择了${selectedCount}人`);
                 return;
             }
-            
+
             // 计算队伍数量
             const teamCount = selectedCount / 5;
-            
+
             // 将选中的玩家转换为数组并按龙力从高到低排序
             const selectedPlayersArray = Array.from(selectedPlayers).map(name => ({
                 name,
                 power: players[name]
             })).sort((a, b) => b.power - a.power);
-            
+
             // 初始化所有队伍
             const teams = new Array(teamCount).fill().map(() => ({
                 players: [],
                 totalPower: 0
             }));
-            
-            // 优化蛇形分配算法
+
+            // 蛇形分配算法
             for (let i = 0; i < selectedPlayersArray.length; i++) {
                 const player = selectedPlayersArray[i];
-                
+
                 // 确定当前轮次
                 const round = Math.floor(i / teamCount);
-                
+
                 // 确定分配位置
                 let position;
                 if (round % 2 === 0) {
@@ -777,98 +817,112 @@
                     // 奇数轮：从右到左
                     position = teamCount - 1 - (i % teamCount);
                 }
-                
+
                 // 分配玩家
                 teams[position].players.push(player);
-                teams[position].totalPower += player.power;
+                // 这里不直接加totalPower，后面统一计算
             }
-            
-            // 计算所有队伍的平均龙力
-            const totalPower = teams.reduce((sum, team) => sum + team.totalPower, 0);
-            const avgPower = totalPower / teamCount;
-            
-            // 记录龙力范围
+
+            // 计算每个队伍的实际总龙力（基于players数组计算）
+            teams.forEach(team => {
+                team.totalPower = team.players.reduce((sum, player) => sum + player.power, 0);
+            });
+
+            // 计算初始统计
             let minPower = Infinity;
             let maxPower = -Infinity;
-            
             teams.forEach(team => {
                 if (team.totalPower < minPower) minPower = team.totalPower;
                 if (team.totalPower > maxPower) maxPower = team.totalPower;
             });
-            
-            // 计算最大误差
-            const maxError = maxPower - minPower;
-            
-            // 如果误差大于1，尝试优化
-            if (maxError > 1) {
-                let improved = false;
-                let iterations = 0;
+            let maxError = maxPower - minPower;
+
+            // 如果最大误差超过0.5，进行优化调整
+            if (maxError > 0.5) {
+                // 优化交换算法
                 const maxIterations = 100;
-                
-                while (maxError > 1 && iterations < maxIterations) {
+                let improved = true;
+
+                for (let iter = 0; iter < maxIterations && improved; iter++) {
                     improved = false;
-                    
-                    // 对每个队伍进行微调
+
+                    // 对每对队伍尝试交换
                     for (let i = 0; i < teams.length; i++) {
                         for (let j = i + 1; j < teams.length; j++) {
-                            // 尝试交换两队中的队员
+                            // 尝试交换这两个队伍中的队员
                             for (let m = 0; m < teams[i].players.length; m++) {
                                 for (let n = 0; n < teams[j].players.length; n++) {
                                     const playerI = teams[i].players[m];
                                     const playerJ = teams[j].players[n];
-                                    
-                                    // 计算交换后的龙力
-                                    const newPowerI = teams[i].totalPower - playerI.power + playerJ.power;
-                                    const newPowerJ = teams[j].totalPower - playerJ.power + playerI.power;
-                                    
+
+                                    // 如果龙力相同，跳过
+                                    if (Math.abs(playerI.power - playerJ.power) < 0.1) continue;
+
+                                    // 交换队员
+                                    [teams[i].players[m], teams[j].players[n]] = [teams[j].players[n], teams[i].players[m]];
+
+                                    // 重新计算两个队伍的总龙力
+                                    const newPowerI = teams[i].players.reduce((sum, player) => sum + player.power, 0);
+                                    const newPowerJ = teams[j].players.reduce((sum, player) => sum + player.power, 0);
+
+                                    // 更新队伍总龙力
+                                    teams[i].totalPower = newPowerI;
+                                    teams[j].totalPower = newPowerJ;
+
                                     // 计算交换后的最大误差
-                                    const teamsCopy = [...teams];
-                                    teamsCopy[i].totalPower = newPowerI;
-                                    teamsCopy[j].totalPower = newPowerJ;
-                                    
                                     let newMinPower = Infinity;
                                     let newMaxPower = -Infinity;
-                                    teamsCopy.forEach(team => {
+                                    teams.forEach(team => {
                                         if (team.totalPower < newMinPower) newMinPower = team.totalPower;
                                         if (team.totalPower > newMaxPower) newMaxPower = team.totalPower;
                                     });
-                                    
+
                                     const newMaxError = newMaxPower - newMinPower;
-                                    
-                                    // 如果误差减小，执行交换
+
+                                    // 如果误差减小，保留交换
                                     if (newMaxError < maxError) {
-                                        // 交换队员
-                                        [teams[i].players[m], teams[j].players[n]] = [teams[j].players[n], teams[i].players[m]];
-                                        teams[i].totalPower = newPowerI;
-                                        teams[j].totalPower = newPowerJ;
-                                        
+                                        // 更新统计
+                                        minPower = newMinPower;
+                                        maxPower = newMaxPower;
+                                        maxError = newMaxError;
+
                                         improved = true;
-                                        break;
+
+                                        // 如果误差已经<=0.5，停止优化
+                                        if (maxError <= 0.5) break;
+                                    } else {
+                                        // 误差没有减小，交换回来
+                                        [teams[i].players[m], teams[j].players[n]] = [teams[j].players[n], teams[i].players[m]];
+                                        teams[i].totalPower = teams[i].players.reduce((sum, player) => sum + player.power, 0);
+                                        teams[j].totalPower = teams[j].players.reduce((sum, player) => sum + player.power, 0);
                                     }
                                 }
-                                if (improved) break;
+                                if (maxError <= 0.5) break;
                             }
-                            if (improved) break;
+                            if (maxError <= 0.5) break;
                         }
-                        if (improved) break;
+                        if (maxError <= 0.5) break;
                     }
-                    
-                    iterations++;
-                    if (!improved) break;
-                    
-                    // 重新计算最大误差
-                    minPower = Infinity;
-                    maxPower = -Infinity;
-                    teams.forEach(team => {
-                        if (team.totalPower < minPower) minPower = team.totalPower;
-                        if (team.totalPower > maxPower) maxPower = team.totalPower;
-                    });
-                    
-                    const currentMaxError = maxPower - minPower;
-                    if (currentMaxError <= 1) break;
+
+                    // 重新计算统计
+                    if (!improved && maxError > 0.5) {
+                        minPower = Infinity;
+                        maxPower = -Infinity;
+                        teams.forEach(team => {
+                            team.totalPower = team.players.reduce((sum, player) => sum + player.power, 0);
+                            if (team.totalPower < minPower) minPower = team.totalPower;
+                            if (team.totalPower > maxPower) maxPower = team.totalPower;
+                        });
+                        maxError = maxPower - minPower;
+                    }
                 }
             }
-            
+
+            // 最终重新计算所有队伍的总龙力，确保准确性
+            teams.forEach(team => {
+                team.totalPower = team.players.reduce((sum, player) => sum + player.power, 0);
+            });
+
             // 最终计算最大误差
             let finalMinPower = Infinity;
             let finalMaxPower = -Infinity;
@@ -876,32 +930,44 @@
                 if (team.totalPower < finalMinPower) finalMinPower = team.totalPower;
                 if (team.totalPower > finalMaxPower) finalMaxPower = team.totalPower;
             });
-            
+
             const finalMaxError = finalMaxPower - finalMinPower;
-            
+
             // 显示结果
             displayTournamentResults(teams, finalMaxError);
         }
-        
+
         // 显示常规分组结果
         function displayRegularResults(team1, team2, maxError) {
             const team1PlayersElement = document.getElementById('team1Players');
             const team2PlayersElement = document.getElementById('team2Players');
             const errorInfoElement = document.getElementById('errorInfo');
-            
+
             team1PlayersElement.innerHTML = '';
             team2PlayersElement.innerHTML = '';
-            
+
             // 计算总龙力
             const team1Power = team1.reduce((sum, player) => sum + player.power, 0);
             const team2Power = team2.reduce((sum, player) => sum + player.power, 0);
-            
+
             // 显示误差信息
-            const errorMessage = maxError <= 1 
-                ? `✅ 队伍间最大误差: ${maxError.toFixed(1)} 龙 (符合要求 ≤1)` 
-                : `⚠️ 队伍间最大误差: ${maxError.toFixed(1)} 龙 (略高于目标 ≤1)`;
+            let errorClass = 'warning';
+            let errorMessage = '';
+
+            if (maxError <= 0.5) {
+                errorClass = 'success';
+                errorMessage = `✅ 队伍间误差: ${maxError.toFixed(1)} 龙 (符合要求 ≤0.5)`;
+            } else if (maxError <= 1) {
+                errorClass = 'warning';
+                errorMessage = `⚠️ 队伍间误差: ${maxError.toFixed(1)} 龙 (符合要求 ≤1)`;
+            } else {
+                errorClass = 'warning';
+                errorMessage = `⚠️ 队伍间误差: ${maxError.toFixed(1)} 龙 (超出目标)`;
+            }
+
+            errorInfoElement.className = `error-display ${errorClass}`;
             errorInfoElement.textContent = errorMessage;
-            
+
             // 渲染队伍1
             team1.forEach(player => {
                 const playerElement = document.createElement('div');
@@ -912,7 +978,7 @@
                 `;
                 team1PlayersElement.appendChild(playerElement);
             });
-            
+
             // 渲染队伍2
             team2.forEach(player => {
                 const playerElement = document.createElement('div');
@@ -923,45 +989,72 @@
                 `;
                 team2PlayersElement.appendChild(playerElement);
             });
-            
+
             // 更新总龙力显示
             document.getElementById('team1Power').textContent = team1Power.toFixed(1);
             document.getElementById('team2Power').textContent = team2Power.toFixed(1);
-            
+
             // 显示结果区域，隐藏比赛模式结果
             document.getElementById('results').style.display = 'block';
             document.getElementById('tournamentResults').style.display = 'none';
-            
+
             // 滚动到结果区域
             document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         }
-        
+
         // 显示比赛模式分组结果
         function displayTournamentResults(teams, maxError) {
             const tournamentTeamsElement = document.getElementById('tournamentTeams');
             const tournamentErrorInfoElement = document.getElementById('tournamentErrorInfo');
             tournamentTeamsElement.innerHTML = '';
-            
-            // 定义队伍名称
-            const teamNames = [
-                "近卫军团", "天灾军团", "圣光骑士团", "暗影议会", 
-                "钢铁洪流", "魔法学院", "荒野猎手", "深海舰队",
-                "雷霆战队", "风暴联盟", "烈焰军团", "寒冰守卫"
-            ];
-            
+
             // 显示误差信息
-            const errorMessage = maxError <= 1 
-                ? `✅ 所有队伍间最大误差: ${maxError.toFixed(1)} 龙 (符合要求 ≤1)` 
-                : `⚠️ 所有队伍间最大误差: ${maxError.toFixed(1)} 龙 (略高于目标 ≤1)`;
+            let errorClass = 'warning';
+            let errorMessage = '';
+
+            if (maxError <= 0.5) {
+                errorClass = 'success';
+                errorMessage = `✅ 所有队伍间最大误差: ${maxError.toFixed(1)} 龙 (符合要求 ≤0.5)`;
+            } else if (maxError <= 1) {
+                errorClass = 'warning';
+                errorMessage = `⚠️ 所有队伍间最大误差: ${maxError.toFixed(1)} 龙 (符合要求 ≤1)`;
+            } else {
+                errorClass = 'warning';
+                errorMessage = `⚠️ 所有队伍间最大误差: ${maxError.toFixed(1)} 龙 (超出目标)`;
+            }
+
+            tournamentErrorInfoElement.className = `error-display ${errorClass}`;
             tournamentErrorInfoElement.textContent = errorMessage;
-            
-            // 渲染每个队伍
+
+            // 渲染每个队伍（列表形式）
             teams.forEach((team, index) => {
                 const teamElement = document.createElement('div');
-                teamElement.className = 'tournament-team';
-                teamElement.innerHTML = `
-                    <div class="tournament-team-header">${teamNames[index] || `队伍 ${index + 1}`}</div>
-                `;
+                teamElement.className = 'tournament-team-item';
+
+                // 队伍标题行（包含队伍名和总龙力）
+                const headerElement = document.createElement('div');
+                headerElement.className = 'tournament-team-header';
+
+                // 队伍名称
+                const teamNameElement = document.createElement('div');
+                teamNameElement.className = 'team-name';
+                teamNameElement.textContent = `队伍${index + 1}`;
+                headerElement.appendChild(teamNameElement);
+
+                // 重新计算队伍总龙力，确保准确性
+                const actualTotalPower = team.players.reduce((sum, player) => sum + player.power, 0);
+
+                // 总龙力（在同一行靠右）
+                const powerElement = document.createElement('div');
+                powerElement.className = 'team-total-power';
+                powerElement.textContent = `总龙力: ${actualTotalPower.toFixed(1)}`;
+                headerElement.appendChild(powerElement);
+                
+                teamElement.appendChild(headerElement);
+                
+                // 玩家列表
+                const playersElement = document.createElement('div');
+                playersElement.className = 'tournament-team-players';
                 
                 // 按龙力从高到低排序队伍成员
                 const sortedPlayers = [...team.players].sort((a, b) => b.power - a.power);
@@ -969,25 +1062,15 @@
                 // 渲染队伍成员
                 sortedPlayers.forEach(player => {
                     const playerElement = document.createElement('div');
-                    playerElement.className = 'team-player';
+                    playerElement.className = 'tournament-player';
                     playerElement.innerHTML = `
-                        <span>${player.name}</span>
-                        <span>${player.power} 龙</span>
+                        <span class="player-name-tag">${player.name}</span>
+                        <span class="player-power-tag">(${player.power}龙)</span>
                     `;
-                    teamElement.appendChild(playerElement);
+                    playersElement.appendChild(playerElement);
                 });
                 
-                // 添加总龙力
-                const powerElement = document.createElement('div');
-                powerElement.className = 'team-power';
-                powerElement.innerHTML = `总龙力: <span>${team.totalPower.toFixed(1)}</span>`;
-                teamElement.appendChild(powerElement);
-                
-                // 添加平均龙力信息
-                const statsElement = document.createElement('div');
-                statsElement.className = 'team-stats';
-                statsElement.innerHTML = `平均龙力: ${(team.totalPower / team.players.length).toFixed(2)}`;
-                teamElement.appendChild(statsElement);
+                teamElement.appendChild(playersElement);
                 
                 tournamentTeamsElement.appendChild(teamElement);
             });
