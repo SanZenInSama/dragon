@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龙力玩家分组系统by嘉然</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-box {
+            flex: 0 0 auto;
+            width: 200px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .reimport-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .reimport-btn:hover {
+            background-color: #2980b9;
+        }
+        .match-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .match-btn:hover {
+            background-color: #27ae60;
+        }
+        .match-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        .mode-toggle input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .mode-toggle label {
+            font-size: 14px;
+            cursor: pointer;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .player-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .player-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .player-card.selected {
+            border-color: #e74c3c;
+            background-color: #fff9f9;
+        }
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        .player-power {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .selected-check {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .player-card.selected .selected-check {
+            opacity: 1;
+        }
+        .results {
+            display: none;
+            margin-top: 30px;
+            border-top: 2px solid #2c3e50;
+            padding-top: 20px;
+        }
+        .teams {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .team {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .team-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .team-1 .team-header {
+            color: #e74c3c;
+        }
+        .team-2 .team-header {
+            color: #3498db;
+        }
+        .team-player {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .team-power {
+            margin-top: 15px;
+            text-align: right;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .selected-count {
+            margin-left: 10px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        /* 比赛模式下的队伍展示样式 */
+        .tournament-teams-container {
+            display: none;
+            margin-top: 30px;
+        }
+        .tournament-teams-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tournament-teams {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .tournament-team {
+            flex: 0 0 calc(33.333% - 20px);
+            min-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tournament-team-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            color: #2c3e50;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .modal-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .modal-btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+        .modal-confirm {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .modal-cancel {
+            background-color: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>龙力玩家分组系统by嘉然</h1>
+        
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索玩家ID...">
+            </div>
+            <div class="controls-right">
+                <button id="reimportBtn" class="reimport-btn">重新导入龙力</button>
+                <div class="mode-toggle">
+                    <input type="checkbox" id="tournamentMode">
+                    <label for="tournamentMode">比赛模式</label>
+                </div>
+                <button id="matchBtn" class="match-btn">匹配队伍</button>
+                <span id="selectedCount" class="selected-count">已选: 0/10</span>
+            </div>
+        </div>
+        
+        <div id="playerGrid" class="player-grid"></div>
+        
+        <div id="results" class="results">
+            <h2>分组结果</h2>
+            <div class="teams">
+                <div class="team team-1">
+                    <div class="team-header">近卫军团</div>
+                    <div id="team1Players"></div>
+                    <div class="team-power">总龙力: <span id="team1Power">0</span></div>
+                </div>
+                <div class="team team-2">
+                    <div class="team-header">天灾军团</div>
+                    <div id="team2Players"></div>
+                    <div class="team-power">总龙力: <span id="team2Power">0</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="tournamentResults" class="tournament-teams-container">
+            <div class="tournament-teams-title">比赛模式分组结果</div>
+            <div id="tournamentTeams" class="tournament-teams"></div>
+        </div>
+    </div>
+
+    <!-- 重新导入龙力模态框 -->
+    <div id="reimportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">重新导入龙力数据</div>
+            <textarea id="importTextarea" class="modal-textarea" placeholder="请粘贴龙力数据，格式示例：
+【4龙】：嘉然、前程哥
+【3.5龙】：达子、情不知所、蝶恋花
+【3龙】：老sa，古户梨花
+【2.5龙】：鹏是口口、飘零1987
+..."></textarea>
+            <div class="modal-buttons">
+                <button id="cancelImport" class="modal-btn modal-cancel">取消</button>
+                <button id="confirmImport" class="modal-btn modal-confirm">确认导入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 默认玩家数据
+        const defaultPlayers = {
+    "SMJB": 4,
+    "涅槃": 4,
+    "嘉然": 4,
+    "芸府": 4,
+    "千华": 4,
+    "二哥": 3.5,
+    "凌天": 3.5,
+    "潇遥": 3.5,
+    "吴孟达": 3.5,
+    "老情": 3.5,
+    "灭世": 3.5,
+    "阿鹅": 3.5,
+    "潘神": 3.5,
+    "花花鱼": 3.5,
+    "楠楠郭": 3.5,
+    "佩老师": 3.5,
+    "纽卡": 3,
+    "向阳": 3,
+    "阿平": 3,
+    "小欢哥": 3,
+    "冷少": 3,
+    "安娜": 3,
+    "蓝屁股": 3,
+    "七秒": 3,
+    "校花": 3,
+    "富贵": 3,
+    "开图": 3,
+    "七夜": 3,
+    "清心寡欲": 3,
+    "猛子": 3,
+    "烤鸡腿": 3,
+    "挨揍": 3,
+    "灭徒": 2.5,
+    "讲过往": 2.5,
+    "橘子": 2.5,
+    "大恐龙": 2.5,
+    "落腥": 2.5,
+    "人性本涩": 2.5,
+    "烤恐龙": 2.5,
+    "蓝七胖": 2.5,
+    "叶斩秋": 2.5,
+    "独秀": 2,
+    "基无敌": 2,
+    "如玉": 2,
+    "文总": 2,
+    "不虚": 2,
+    "毛子": 2,
+    "幽冥": 2,
+    "榆林后生": 2,
+    "007": 2,
+    "小若溪": 2,
+    "矮子": 1.5,
+    "月光宝宝": 1.5,
+    "我湘威武": 1.5,
+    "长安": 1.5,
+    "玩玩": 1.5,
+    "范迪塞尔": 1.5,
+    "前原诚司": 1.5,
+    "凯凯爽歪歪": 1,
+    "流卷风": 1,
+    "毅如既往": 1,
+    "小明": 1,
+    "杀手": 1,
+    "阿点": 1,
+    "阿朵": 1,
+    "清风拂发": 1,
+    "虎牙儿": 1,
+    "月底": 1,
+    "工程师": 1
+};
+
+        let players = {...defaultPlayers};
+        let selectedPlayers = new Set();
+        let tournamentMode = false;
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPlayerGrid();
+            
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', function() {
+                renderPlayerGrid();
+            });
+            
+            // 比赛模式切换
+            document.getElementById('tournamentMode').addEventListener('change', function() {
+                tournamentMode = this.checked;
+                selectedPlayers.clear();
+                renderPlayerGrid();
+                updateSelectedCount();
+            });
+            
+            // 重新导入龙力
+            document.getElementById('reimportBtn').addEventListener('click', function() {
+                document.getElementById('reimportModal').style.display = 'flex';
+                document.getElementById('importTextarea').value = generateExportText();
+                document.getElementById('importTextarea').focus();
+            });
+            
+            // 模态框按钮
+            document.getElementById('cancelImport').addEventListener('click', function() {
+                document.getElementById('reimportModal').style.display = 'none';
+            });
+            
+            document.getElementById('confirmImport').addEventListener('click', function() {
+                const text = document.getElementById('importTextarea').value;
+                if (text.trim()) {
+                    try {
+                        const importedPlayers = parsePlayerText(text);
+                        players = importedPlayers;
+                        selectedPlayers.clear();
+                        renderPlayerGrid();
+                        alert(`成功导入 ${Object.keys(importedPlayers).length} 名玩家数据`);
+                        document.getElementById('reimportModal').style.display = 'none';
+                    } catch (e) {
+                        alert('导入失败: ' + e.message);
+                    }
+                } else {
+                    alert('请输入有效的龙力数据');
+                }
+            });
+            
+            // 匹配队伍
+            document.getElementById('matchBtn').addEventListener('click', matchTeams);
+        });
+        
+        // 生成导出文本
+        function generateExportText() {
+            const powerGroups = {};
+            
+            // 按龙力分组
+            Object.entries(players).forEach(([name, power]) => {
+                if (!powerGroups[power]) {
+                    powerGroups[power] = [];
+                }
+                powerGroups[power].push(name);
+            });
+            
+            // 按龙力从高到低排序
+            const sortedPowers = Object.keys(powerGroups).sort((a, b) => b - a);
+            
+            // 生成文本
+            let result = '';
+            sortedPowers.forEach(power => {
+                result += `【${power}龙】：${powerGroups[power].join('、')}\n`;
+            });
+            
+            return result.trim();
+        }
+        
+        // 解析玩家文本
+        function parsePlayerText(text) {
+            const players = {};
+            const lines = text.split('\n');
+            
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
+                // 匹配格式如：【4龙】：嘉然、前程哥
+                const match = line.match(/^【(\d+(?:\.\d+)?)龙】：(.+)$/);
+                if (!match) {
+                    throw new Error(`格式错误: "${line}"`);
+                }
+                
+                const power = parseFloat(match[1]);
+                const names = match[2].split(/[、，,]/).map(name => name.trim()).filter(name => name);
+                
+                names.forEach(name => {
+                    players[name] = power;
+                });
+            }
+            
+            if (Object.keys(players).length === 0) {
+                throw new Error('未找到有效的玩家数据');
+            }
+            
+            return players;
+        }
+        
+        // 渲染玩家网格
+        function renderPlayerGrid() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const playerGridElement = document.getElementById('playerGrid');
+            playerGridElement.innerHTML = '';
+            
+            // 过滤和排序玩家
+            const filteredPlayers = Object.entries(players)
+                .filter(([name]) => name.toLowerCase().includes(searchTerm))
+                .sort((a, b) => b[1] - a[1]);
+            
+            // 渲染每个玩家卡片
+            filteredPlayers.forEach(([name, power]) => {
+                const playerCard = document.createElement('div');
+                playerCard.className = `player-card ${selectedPlayers.has(name) ? 'selected' : ''}`;
+                playerCard.innerHTML = `
+                    <div class="selected-check">✓</div>
+                    <div class="player-name">${name}</div>
+                    <div class="player-power">${power} 龙</div>
+                `;
+                
+                playerCard.addEventListener('click', function() {
+                    if (selectedPlayers.has(name)) {
+                        selectedPlayers.delete(name);
+                        this.classList.remove('selected');
+                    } else {
+                        // 比赛模式下不限制选择人数
+                        if (!tournamentMode && selectedPlayers.size >= 10) {
+                            alert('非比赛模式下最多只能选择10名玩家');
+                            return;
+                        }
+                        selectedPlayers.add(name);
+                        this.classList.add('selected');
+                    }
+                    updateSelectedCount();
+                });
+                
+                playerGridElement.appendChild(playerCard);
+            });
+            
+            updateSelectedCount();
+        }
+        
+        // 更新已选玩家计数
+        function updateSelectedCount() {
+            const selectedCount = selectedPlayers.size;
+            const matchBtn = document.getElementById('matchBtn');
+            
+            if (tournamentMode) {
+                // 比赛模式：选择人数为5的倍数时才可点击
+                const isMultipleOf5 = selectedCount > 0 && selectedCount % 5 === 0;
+                matchBtn.disabled = !isMultipleOf5;
+                document.getElementById('selectedCount').textContent = `已选: ${selectedCount}人 (需要5的倍数)`;
+            } else {
+                // 非比赛模式：选择10人时才可点击
+                matchBtn.disabled = selectedCount !== 10;
+                document.getElementById('selectedCount').textContent = `已选: ${selectedCount}/10`;
+            }
+        }
+        
+        // 匹配队伍
+        function matchTeams() {
+            if (tournamentMode) {
+                matchTournamentTeams();
+            } else {
+                matchRegularTeams();
+            }
+        }
+        
+        // 匹配常规队伍（2队模式）
+        function matchRegularTeams() {
+            if (selectedPlayers.size !== 10) {
+                alert('请选择10名玩家进行匹配');
+                return;
+            }
+            
+            // 将选中的玩家转换为数组并排序
+            const selectedPlayersArray = Array.from(selectedPlayers).map(name => ({
+                name,
+                power: players[name]
+            })).sort((a, b) => b.power - a.power);
+            
+            // 使用贪心算法分配队伍
+            let team1 = [];
+            let team2 = [];
+            let team1Power = 0;
+            let team2Power = 0;
+            
+            for (let i = 0; i < selectedPlayersArray.length; i++) {
+                const player = selectedPlayersArray[i];
+                
+                if (i % 2 === 0) {
+                    if (team1.length < 5) {
+                        team1.push(player);
+                        team1Power += player.power;
+                    } else {
+                        team2.push(player);
+                        team2Power += player.power;
+                    }
+                } else {
+                    if (team2.length < 5) {
+                        team2.push(player);
+                        team2Power += player.power;
+                    } else {
+                        team1.push(player);
+                        team1Power += player.power;
+                    }
+                }
+            }
+            
+            // 显示结果
+            displayRegularResults(team1, team2);
+        }
+        
+        // 匹配比赛队伍（多队模式）
+        function matchTournamentTeams() {
+            const selectedCount = selectedPlayers.size;
+            if (selectedCount % 5 !== 0) {
+                alert(`比赛模式需要选择5的倍数人数，当前选择了${selectedCount}人`);
+                return;
+            }
+            
+            // 计算队伍数量
+            const teamCount = selectedCount / 5;
+            
+            // 将选中的玩家转换为数组并排序
+            const selectedPlayersArray = Array.from(selectedPlayers).map(name => ({
+                name,
+                power: players[name]
+            })).sort((a, b) => b.power - a.power);
+            
+            // 初始化队伍
+            const teams = new Array(teamCount).fill().map(() => ({
+                players: [],
+                totalPower: 0
+            }));
+            
+            // 使用蛇形分配算法（Snake Draft）进行分配
+            for (let i = 0; i < selectedPlayersArray.length; i++) {
+                const player = selectedPlayersArray[i];
+                
+                // 确定当前轮次和分配方向
+                const round = Math.floor(i / teamCount);
+                const isEvenRound = round % 2 === 0;
+                
+                // 确定分配位置
+                let position;
+                if (isEvenRound) {
+                    // 偶数轮：从左到右
+                    position = i % teamCount;
+                } else {
+                    // 奇数轮：从右到左
+                    position = teamCount - 1 - (i % teamCount);
+                }
+                
+                // 分配玩家
+                teams[position].players.push(player);
+                teams[position].totalPower += player.power;
+            }
+            
+            // 显示结果
+            displayTournamentResults(teams);
+        }
+        
+        // 显示常规分组结果
+        function displayRegularResults(team1, team2) {
+            const team1PlayersElement = document.getElementById('team1Players');
+            const team2PlayersElement = document.getElementById('team2Players');
+            
+            team1PlayersElement.innerHTML = '';
+            team2PlayersElement.innerHTML = '';
+            
+            // 计算总龙力
+            const team1Power = team1.reduce((sum, player) => sum + player.power, 0);
+            const team2Power = team2.reduce((sum, player) => sum + player.power, 0);
+            
+            // 渲染队伍1
+            team1.forEach(player => {
+                const playerElement = document.createElement('div');
+                playerElement.className = 'team-player';
+                playerElement.innerHTML = `
+                    <span>${player.name}</span>
+                    <span>${player.power} 龙</span>
+                `;
+                team1PlayersElement.appendChild(playerElement);
+            });
+            
+            // 渲染队伍2
+            team2.forEach(player => {
+                const playerElement = document.createElement('div');
+                playerElement.className = 'team-player';
+                playerElement.innerHTML = `
+                    <span>${player.name}</span>
+                    <span>${player.power} 龙</span>
+                `;
+                team2PlayersElement.appendChild(playerElement);
+            });
+            
+            // 更新总龙力显示
+            document.getElementById('team1Power').textContent = team1Power.toFixed(1);
+            document.getElementById('team2Power').textContent = team2Power.toFixed(1);
+            
+            // 显示结果区域，隐藏比赛模式结果
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('tournamentResults').style.display = 'none';
+            
+            // 滚动到结果区域
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 显示比赛模式分组结果
+        function displayTournamentResults(teams) {
+            const tournamentTeamsElement = document.getElementById('tournamentTeams');
+            tournamentTeamsElement.innerHTML = '';
+            
+            // 定义队伍名称
+            const teamNames = [
+                "近卫军团", "天灾军团", "圣光骑士团", "暗影议会", 
+                "钢铁洪流", "魔法学院", "荒野猎手", "深海舰队"
+            ];
+            
+            // 渲染每个队伍
+            teams.forEach((team, index) => {
+                const teamElement = document.createElement('div');
+                teamElement.className = 'tournament-team';
+                teamElement.innerHTML = `
+                    <div class="tournament-team-header">${teamNames[index] || `队伍 ${index + 1}`}</div>
+                `;
+                
+                // 渲染队伍成员
+                team.players.forEach(player => {
+                    const playerElement = document.createElement('div');
+                    playerElement.className = 'team-player';
+                    playerElement.innerHTML = `
+                        <span>${player.name}</span>
+                        <span>${player.power} 龙</span>
+                    `;
+                    teamElement.appendChild(playerElement);
+                });
+                
+                // 添加总龙力
+                const powerElement = document.createElement('div');
+                powerElement.className = 'team-power';
+                powerElement.innerHTML = `总龙力: <span>${team.totalPower.toFixed(1)}</span>`;
+                teamElement.appendChild(powerElement);
+                
+                tournamentTeamsElement.appendChild(teamElement);
+            });
+            
+            // 显示比赛模式结果区域，隐藏常规结果
+            document.getElementById('tournamentResults').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            // 滚动到结果区域
+            document.getElementById('tournamentResults').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
