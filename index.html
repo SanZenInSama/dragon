@@ -20,10 +20,42 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
+        /* 调整标题行布局，让下载按钮靠右 */
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header-row h1 {
+            margin: 0;
+            color: #2c3e50;
+            flex: 1 1 auto;
+        }
+        .download-tool-btn {
+            background-color: #f39c12;        /* 橙色，与其他按钮区分但和谐 */
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.1s;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-decoration: none;              /* 用于a标签 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .download-tool-btn:hover {
+            background-color: #e67e22;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         .controls {
             display: flex;
@@ -375,7 +407,16 @@
 </head>
 <body>
 <div class="container">
-    <h1>dragon战力分组v2.3——by嘉然</h1>
+    <!-- 修改：将标题和下载按钮放在一个flex行中，保持风格一致 -->
+    <div class="header-row">
+        <h1>dragon战力分组v2.3——by嘉然</h1>
+        <!-- 新增：日志分析软件下载按钮，样式与其他按钮协调，使用a标签直接下载 -->
+        <a href="https://github.com/SanZenInSama/log-analysis/raw/refs/heads/main/LogAnalysis_V1.1.exe" 
+           class="download-tool-btn" 
+           download="LogAnalysis_V1.1.exe">
+            📥 日志分析软件下载
+        </a>
+    </div>
 
     <div class="controls">
         <div class="controls-left">
